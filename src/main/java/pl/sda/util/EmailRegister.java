@@ -9,15 +9,11 @@ import java.util.Properties;
 
 public class EmailRegister {
 
-    String username;
-
-
+    private String username;
 
 
     public EmailRegister() {
-
     }
-
 
     public void send(String username, String token){
 
@@ -43,7 +39,7 @@ public class EmailRegister {
             message.setSubject("Register new user: "+username);
 
 
-            String msg = "Hi "+username+" click here to confirm register <a href=\"${pageContext.request.contextPath}/activate\">click me</a>";
+            String msg = "Hi "+username+" click here to confirm register <a href=\"http://localhost:8080/JavaPOZ16blog_war/?action=activate&regId="+token+"\">click me</a>";
 
             MimeBodyPart mimeBodyPart = new MimeBodyPart();
             mimeBodyPart.setContent(msg, "text/html");
@@ -58,9 +54,5 @@ public class EmailRegister {
         } catch (MessagingException e) {
             e.printStackTrace();
         }
-
-
     }
-
-
 }

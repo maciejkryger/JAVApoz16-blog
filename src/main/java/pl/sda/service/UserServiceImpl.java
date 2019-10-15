@@ -12,7 +12,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isUserValid(String login, String password) {
         User user = userDao.getUser(login);
-        return user!=null && login.equals(user.getUsername()) && PasswordUtil.checkPassword(password, user.getPassword());
+        return user!=null && login.equals(user.getUsername()) && PasswordUtil.checkPassword(password, user.getPassword())&& userDao.isUserActivated(login);
     }
 
     @Override
@@ -23,4 +23,26 @@ public class UserServiceImpl implements UserService {
         String token = userDao.addUser(login, hashPassword);
         return token;
     }
+
+    @Override
+    public boolean activateUser(String token) {
+        return userDao.activateUser(token);
+    }
+
+    @Override
+    public String getUsernameByToken(String token) {
+        return userDao.getUsernameByToken(token);
+    }
+
+    @Override
+    public boolean isUserRegistered(String username) {
+        return userDao.isUserRegistered(username);
+    }
+
+    @Override
+    public boolean isUserActivated(String username) {
+        return userDao.isUserActivated(username);
+    }
+
+
 }

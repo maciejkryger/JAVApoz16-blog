@@ -15,6 +15,7 @@ import java.io.IOException;
 public class LoginController extends HttpServlet {
 
     EmailRegister emailRegister = new EmailRegister();
+    UserService userService = new UserServiceImpl();
 
 
     @Override
@@ -22,7 +23,7 @@ public class LoginController extends HttpServlet {
         String login = req.getParameter("login");
 //        String password = req.getParameter("password");
 
-        System.out.println("login is sent as :" + login);
+        System.out.println("do POST /login with login parameter:" + login);
 
         String action = req.getParameter("action");
         switch (action) {
@@ -40,6 +41,7 @@ public class LoginController extends HttpServlet {
         }
     }
 
+
     private void login(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         String login = req.getParameter("login");
         String password = req.getParameter("password");
@@ -51,7 +53,14 @@ public class LoginController extends HttpServlet {
             System.out.println("przechodzi if z doPOST");
             req.getSession().setAttribute("loginSession", login);
             resp.sendRedirect(req.getContextPath() + "/");
-        } else {
+        } else if(login.trim() != null && !login.trim().isEmpty()
+                && password.trim() != null && !password.trim().isEmpty()
+                && userService.isUserRegistered(login) &&!userService.isUserActivated(login)) {
+            System.out.println("else if z doPOST");
+            req.setAttribute("notActivated", "true");
+            getServletContext().getRequestDispatcher("/blog.jsp").forward(req, resp);
+
+        }else {
             System.out.println("else z doPOST");
             req.setAttribute("errorLogin", "true");
             getServletContext().getRequestDispatcher("/blog.jsp").forward(req, resp);
@@ -67,18 +76,22 @@ public class LoginController extends HttpServlet {
         UserService userService = new UserServiceImpl();
 
         if (login.trim() != null && !login.trim().isEmpty()
-                && password.trim() != null && !password.trim().isEmpty()) {
-            System.out.println("Password validation is ok !");
+                && password.trim() != null && !password.trim().isEmpty() && !userService.isUserRegistered(login)) {
+            System.out.println("User and Password validation is ok !");
             String token = userService.addUser(login, password);
             req.setAttribute("confirmRegister", "true");
             System.out.println("New username " + login + " is added!");
             emailRegister.send(login, token);
-            resp.sendRedirect(req.getContextPath() + "/");
+            getServletContext().getRequestDispatcher("/blog.jsp").forward(req, resp);
 
-        } else {
-            System.out.println("Password  is not valid !");
-            req.setAttribute("errorRegister", "true");
-            getServletContext().getRequestDispatcher("/").forward(req, resp);
+        }else if (userService.isUserRegistered(login)){
+            System.out.println(login+" is already existed! Try with other user");
+            req.setAttribute("errorUserIsExisted", "true");
+            getServletContext().getRequestDispatcher("/blog.jsp").forward(req, resp);
+        }else{
+            System.out.println("User and Password  is not valid !");
+            req.setAttribute("errorValidRegister", "true");
+            getServletContext().getRequestDispatcher("/blog.jsp").forward(req, resp);
             System.out.println("New username is not added!");
         }
     }
